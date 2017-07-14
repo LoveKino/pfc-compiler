@@ -104,8 +104,6 @@ let processer = () => {
                 case 'EXP_LIST := EXPRESSION , EXP_LIST':
                     midNode.value = [midNode.children[0].value].concat(midNode.children[2].value);
                     break;
-                default:
-                    throw new Error(`Unexpected production to reduce. ${JSON.stringify(production)}`);
             }
         }
     });
@@ -144,9 +142,13 @@ let translate = (mid, variableMap) => {
             top.value = topMid.value;
             traceTable.push(stack.pop());
         } else if (midType === 'variable') {
-            top.value = variableMap[topMid.name];
+            var varName = topMid.name;
+            if (!variableMap.hasOwnProperty(varName)) {
+                throw new Error(`missing variable ${varName}`);
+            }
+            top.value = variableMap[varName];
             traceTable.push(stack.pop());
-        } else if (midType === 'function') {
+        } else { // function
             if (!top.visited) {
                 top.visited = true;
                 // push params

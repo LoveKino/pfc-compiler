@@ -7,7 +7,15 @@ let assert = require('assert');
 
 let caseData = [
     [
-        ['a'], undefined
+        ['true'], true
+    ],
+
+    [
+        ['false'], false
+    ],
+
+    [
+        ['null'], null
     ],
 
     [
