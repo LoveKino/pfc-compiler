@@ -39,7 +39,7 @@ let processer = () => {
     let lrParse = LR(ACTION, GOTO, {
         // when reduce prodcution, translate at the sametime
         reduceHandler: (production, midNode) => {
-            switch (productionId(production)) {
+            switch (getProductionId(production)) {
                 case 'PROGRAM := EXPRESSION':
                     midNode.value = midNode.children[0].value;
                     break;
@@ -191,7 +191,7 @@ let compile = (str) => {
     return (variableMap) => translate(mid, variableMap);
 };
 
-let productionId = (production) => {
+let getProductionId = (production) => {
     return `${production[0]} := ${production[1].join(' ')}`;
 };
 
