@@ -1,0 +1,15 @@
+# be careful: space between symbols
+
+PROGRAM := EXPRESSION
+
+EXPRESSION := variable 
+    | true 
+    | false
+    | null
+    | string
+    | number
+    | variable ( )
+    | variable ( EXP_LIST )
+
+EXP_LIST := EXPRESSION
+    | EXPRESSION , EXP_LIST

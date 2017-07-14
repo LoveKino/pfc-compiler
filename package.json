@@ -1,0 +1,35 @@
+{
+  "name": "pfc-compiler",
+  "version": "0.0.1",
+  "description": "A compiler for PFC grammer",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha \"test/function/**/*.js\"",
+    "build": "node build/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LoveKino/pfc-compiler.git"
+  },
+  "keywords": [
+    "AST",
+    "compiler",
+    "PFC",
+    "grammer"
+  ],
+  "author": "ddchen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/LoveKino/pfc-compiler/issues"
+  },
+  "homepage": "https://github.com/LoveKino/pfc-compiler#readme",
+  "devDependencies": {
+    "bnfer": "0.0.5",
+    "es6-promisify": "^5.0.0",
+    "mocha": "^3.4.2"
+  },
+  "dependencies": {
+    "stream-token-parser": "0.0.3",
+    "syntaxer": "0.0.11"
+  }
+}
