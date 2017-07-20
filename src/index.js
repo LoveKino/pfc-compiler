@@ -126,8 +126,7 @@ let parser = () => {
 };
 
 // static check
-let checkASTWithContext = (mid, variableMap) => {
-    variableMap = variableMap || {};
+let checkASTWithContext = (mid, variableMap = {}) => {
     let stack = [mid];
 
     while (stack.length) {
@@ -153,18 +152,11 @@ let checkASTWithContext = (mid, variableMap) => {
             }
         }
     }
+
+    return variableMap;
 };
 
-let translate = (mid, variableMap) => {
-    variableMap = variableMap || {};
-    checkASTWithContext(mid, variableMap);
-
-    return () => {
-        return executeAST(mid, variableMap);
-    };
-};
-
-let executeAST = (mid, variableMap) => {
+let executeAST = (mid, variableMap = {}) => {
     let root = {
         mid
     };
@@ -216,11 +208,6 @@ let executeAST = (mid, variableMap) => {
     return root.value;
 };
 
-let compile = (str) => {
-    let mid = parseStrToAst(str);
-    return (variableMap) => translate(mid, variableMap);
-};
-
 let parseStrToAst = (str) => {
     let handleChunk = parser();
     if (str) {
@@ -235,8 +222,6 @@ let getProductionId = (production) => {
 
 module.exports = {
     parser,
-    compile,
-    translate,
     parseStrToAst,
     executeAST,
     checkASTWithContext

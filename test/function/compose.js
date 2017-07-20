@@ -1,7 +1,9 @@
 'use strict';
 
 let {
-    compile
+    parseStrToAst,
+    checkASTWithContext,
+    executeAST
 } = require('../..');
 let assert = require('assert');
 
@@ -26,7 +28,9 @@ let caseData = [
 describe('compose', () => {
     caseData.forEach(([fst, snd]) => {
         it(fst[0], () => {
-            assert.equal(compile(fst[0])(fst[1])(), snd);
+            let ast = parseStrToAst(fst[0]);
+            checkASTWithContext(ast, fst[1]);
+            assert.equal(executeAST(ast, fst[1]), snd);
         });
     });
 });

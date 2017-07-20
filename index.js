@@ -7,14 +7,19 @@ module.exports = require('./src');
  *
  * ## test tar=js r_c=pfcCompiler
  *
- * let {compile} = pfcCompiler;
- * let translate = compile('f1(1, 2, g("234", v2))');
+ * let {parseStrToAst, checkASTWithContext, executeAST} = pfcCompiler;
  *
- * let ret = translate({
+ * let ast = parseStrToAst('f1(1, 2, g("234", v2))');
+ *
+ * let context = {
  *   f1: (a, b, c) => a + b + c,
  *   g: (str1, str2) => Number(str1 + str2),
  *   v2: "5"
- * })();
+ * };
+ *
+ * checkASTWithContext(ast, context); // you can check pfc code at development duration.
+ *
+ * let ret = executeAST(ast, context);
  *
  * console.log(ret);
  */

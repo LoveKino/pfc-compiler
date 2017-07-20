@@ -1,14 +1,15 @@
 'use strict';
 
 let {
-    compile
+    parseStrToAst,
+    checkASTWithContext
 } = require('../..');
 let assert = require('assert');
 
 describe('exception', () => {
     it('missing function', (done) => {
         try {
-            compile('f1()')()();
+            checkASTWithContext(parseStrToAst('f1()'));
         } catch (err) {
             assert(err.toString().indexOf('missing function') !== -1);
             done();
@@ -17,7 +18,7 @@ describe('exception', () => {
 
     it('missing variable', (done) => {
         try {
-            compile('a')()();
+            checkASTWithContext(parseStrToAst('a'));
         } catch (err) {
             assert(err.toString().indexOf('missing variable') !== -1);
             done();
@@ -26,7 +27,7 @@ describe('exception', () => {
 
     it('null string', (done) => {
         try {
-            compile(null)()();
+            parseStrToAst(null);
         } catch (e) {
             done();
         }
