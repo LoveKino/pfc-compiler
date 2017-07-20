@@ -33,7 +33,7 @@ let processTokens = (rawTokens) => {
     return tokens;
 };
 
-let processer = () => {
+let parser = () => {
     let tokenSpliter = streamTokenSpliter.parser(tokenTypes);
 
     let lrParse = LR(ACTION, GOTO, {
@@ -184,7 +184,7 @@ let translate = (mid, variableMap) => {
 };
 
 let compile = (str) => {
-    let handleChunk = processer();
+    let handleChunk = parser();
     if (str) {
         handleChunk(str);
     }
@@ -198,7 +198,7 @@ let getProductionId = (production) => {
 };
 
 module.exports = {
-    processer,
+    parser,
     compile,
     translate
 };
