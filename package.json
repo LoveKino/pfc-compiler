@@ -1,6 +1,6 @@
 {
   "name": "pfc-compiler",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A compiler for PFC grammer",
   "main": "index.js",
   "scripts": {

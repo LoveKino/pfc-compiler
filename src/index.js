@@ -184,13 +184,16 @@ let translate = (mid, variableMap) => {
 };
 
 let compile = (str) => {
+    let mid = parseStrToAst(str);
+    return (variableMap) => translate(mid, variableMap);
+};
+
+let parseStrToAst = (str) => {
     let handleChunk = parser();
     if (str) {
         handleChunk(str);
     }
-    let mid = handleChunk(null);
-
-    return (variableMap) => translate(mid, variableMap);
+    return handleChunk(null);
 };
 
 let getProductionId = (production) => {
@@ -200,5 +203,6 @@ let getProductionId = (production) => {
 module.exports = {
     parser,
     compile,
-    translate
+    translate,
+    parseStrToAst
 };
