@@ -12,7 +12,7 @@ describe('multiple', () => {
 
             v1: 4,
             v2: 5
-        }), 11);
+        })(), 11);
 
         assert.equal(translate({
             f: (x, y, z) => x + y + z,
@@ -20,6 +20,6 @@ describe('multiple', () => {
 
             v1: 4,
             v2: 8
-        }), 23);
+        })(), 23);
     });
 });

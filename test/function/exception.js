@@ -8,7 +8,7 @@ let assert = require('assert');
 describe('exception', () => {
     it('missing function', (done) => {
         try {
-            compile('f1()')();
+            compile('f1()')()();
         } catch (err) {
             assert(err.toString().indexOf('missing function') !== -1);
             done();
@@ -17,7 +17,7 @@ describe('exception', () => {
 
     it('missing variable', (done) => {
         try {
-            compile('a')();
+            compile('a')()();
         } catch (err) {
             assert(err.toString().indexOf('missing variable') !== -1);
             done();
@@ -26,7 +26,7 @@ describe('exception', () => {
 
     it('null string', (done) => {
         try {
-            compile(null)();
+            compile(null)()();
         } catch (e) {
             done();
         }

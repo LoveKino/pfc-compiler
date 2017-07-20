@@ -41,7 +41,7 @@ let ret = translate({
   f1: (a, b, c) => a + b + c,
   g: (str1, str2) => Number(str1 + str2),
   v2: "5"
-});
+})();
 
 console.log(ret);
 ```
@@ -63,6 +63,7 @@ output
 │──LICENSE    
 │──README.md    
 │──README_zh.md    
+│──TODO.md    
 │──build    
 │   └──index.js    
 │──coverage    

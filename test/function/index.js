@@ -63,7 +63,7 @@ let caseData = [
 describe('index', () => {
     caseData.forEach(([fst, snd]) => {
         it(fst[0], () => {
-            assert.equal(compile(fst[0])(fst[1]), snd);
+            assert.equal(compile(fst[0])(fst[1])(), snd);
         });
     });
 });

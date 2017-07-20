@@ -14,7 +14,7 @@ module.exports = require('./src');
  *   f1: (a, b, c) => a + b + c,
  *   g: (str1, str2) => Number(str1 + str2),
  *   v2: "5"
- * });
+ * })();
  *
  * console.log(ret);
  */
