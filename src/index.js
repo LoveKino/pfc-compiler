@@ -160,56 +160,60 @@ let translate = (mid, variableMap) => {
     checkASTWithContext(mid, variableMap);
 
     return () => {
-        let root = {
-            mid
-        };
-        let stack = [root],
-            traceTable = [];
+        return executeAST(mid, variableMap);
+    };
+};
 
-        while (stack.length) {
-            let top = stack[stack.length - 1];
-            let topMid = top.mid;
-            let midType = topMid.type;
+let executeAST = (mid, variableMap) => {
+    let root = {
+        mid
+    };
+    let stack = [root],
+        traceTable = [];
 
-            if (midType === 'atom') {
-                top.value = topMid.value;
-                traceTable.push(stack.pop());
-            } else if (midType === 'variable') {
-                let varName = topMid.name;
+    while (stack.length) {
+        let top = stack[stack.length - 1];
+        let topMid = top.mid;
+        let midType = topMid.type;
 
-                top.value = variableMap[varName];
-                traceTable.push(stack.pop());
-            } else { // function
-                if (!top.visited) {
-                    top.visited = true;
-                    // push params
-                    let params = topMid.params;
-                    let paramLen = params.length;
-                    for (let i = 0; i < paramLen; i++) {
-                        stack.push({
-                            mid: params[i]
-                        });
-                    }
-                } else {
-                    let name = topMid.name;
-                    let fun = variableMap[name];
+        if (midType === 'atom') {
+            top.value = topMid.value;
+            traceTable.push(stack.pop());
+        } else if (midType === 'variable') {
+            let varName = topMid.name;
 
-                    let paramValues = [];
-                    let paramLen = topMid.params.length;
-                    let traceTableLen = traceTable.length;
-                    let stopPos = traceTableLen - paramLen;
-                    for (let i = traceTableLen - 1; i >= stopPos; i--) {
-                        paramValues.push(traceTable.pop().value);
-                    }
-                    top.value = fun(...paramValues);
-
-                    traceTable.push(stack.pop());
+            top.value = variableMap[varName];
+            traceTable.push(stack.pop());
+        } else { // function
+            if (!top.visited) {
+                top.visited = true;
+                // push params
+                let params = topMid.params;
+                let paramLen = params.length;
+                for (let i = 0; i < paramLen; i++) {
+                    stack.push({
+                        mid: params[i]
+                    });
                 }
+            } else {
+                let name = topMid.name;
+                let fun = variableMap[name];
+
+                let paramValues = [];
+                let paramLen = topMid.params.length;
+                let traceTableLen = traceTable.length;
+                let stopPos = traceTableLen - paramLen;
+                for (let i = traceTableLen - 1; i >= stopPos; i--) {
+                    paramValues.push(traceTable.pop().value);
+                }
+                top.value = fun(...paramValues);
+
+                traceTable.push(stack.pop());
             }
         }
+    }
 
-        return root.value;
-    };
+    return root.value;
 };
 
 let compile = (str) => {
@@ -234,5 +238,6 @@ module.exports = {
     compile,
     translate,
     parseStrToAst,
+    executeAST,
     checkASTWithContext
 };
