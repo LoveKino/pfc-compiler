@@ -1,162 +1,26 @@
 'use strict';
 
-let streamTokenSpliter = require('stream-token-parser');
-
 let {
-    LR
-} = require('syntaxer');
-
+    T_VARIABLE,
+    T_ATOM
+} = require('./const');
 let {
-    ACTION, GOTO
-} = require('../res/lr1Table');
+    checkAST,
+    runTimeCheck,
+    getVariable,
+    validateParamsInRunTime
+} = require('./stub');
 
-let tokenTypes = require('../grammer/tokenTypes');
+let parser = require('./parser');
 
-// ignore whitespace
-let processTokens = (rawTokens) => {
-    let tokens = [];
-    for (let i = 0; i < rawTokens.length; i++) {
-        let {
-            text, tokenType
-        } = rawTokens[i];
-
-        let name = tokenType.name;
-
-        if (name !== 'whitespace') { // ignore white space
-            tokens.push({
-                text,
-                name
-            });
-        }
+let executeAST = (mid, variableMap = {}, {
+    variableStub = {},
+    skipCheck
+} = {}) => {
+    if (!skipCheck) {
+        runTimeCheck(variableStub, variableMap);
     }
 
-    return tokens;
-};
-
-let parser = () => {
-    let tokenSpliter = streamTokenSpliter.parser(tokenTypes);
-
-    let lrParse = LR(ACTION, GOTO, {
-        // when reduce prodcution, translate at the sametime
-        reduceHandler: (production, midNode) => {
-            switch (getProductionId(production)) {
-                case 'PROGRAM := EXPRESSION':
-                    midNode.value = midNode.children[0].value;
-                    break;
-                case 'EXPRESSION := variable':
-                    var v1 = midNode.children[0].token.text;
-                    midNode.value = {
-                        type: 'variable',
-                        name: v1
-                    };
-                    break;
-                case 'EXPRESSION := true':
-                    midNode.value = {
-                        type: 'atom',
-                        value: true
-                    };
-                    break;
-                case 'EXPRESSION := false':
-                    midNode.value = {
-                        type: 'atom',
-                        value: false
-                    };
-                    break;
-                case 'EXPRESSION := null':
-                    midNode.value = {
-                        type: 'atom',
-                        value: null
-                    };
-                    break;
-                case 'EXPRESSION := string':
-                    var text = midNode.children[0].token.text;
-                    midNode.value = {
-                        type: 'atom',
-                        value: text.substring(1, text.length - 1)
-                    };
-                    break;
-                case 'EXPRESSION := number':
-                    var numText = midNode.children[0].token.text;
-                    midNode.value = {
-                        type: 'atom',
-                        value: Number(numText)
-                    };
-                    break;
-                case 'EXPRESSION := variable ( )':
-                    var f1Text = midNode.children[0].token.text;
-                    midNode.value = {
-                        type: 'function',
-                        name: f1Text,
-                        params: []
-                    };
-                    break;
-                case 'EXPRESSION := variable ( EXP_LIST )':
-                    var f2Text = midNode.children[0].token.text;
-                    midNode.value = {
-                        type: 'function',
-                        name: f2Text,
-                        params: midNode.children[2].value
-                    };
-                    break;
-                case 'EXP_LIST := EXPRESSION':
-                    midNode.value = [midNode.children[0].value];
-                    break;
-                case 'EXP_LIST := EXPRESSION , EXP_LIST':
-                    midNode.value = [midNode.children[0].value].concat(midNode.children[2].value);
-                    break;
-            }
-        }
-    });
-
-    // handle chunk data
-    return (chunk) => {
-        let str = chunk && chunk.toString();
-        let tokens = processTokens(tokenSpliter(str));
-
-        for (let i = 0; i < tokens.length; i++) {
-            lrParse(tokens[i]);
-        }
-
-        // means finished chunks
-        if (chunk === null) {
-            let ast = lrParse(null);
-            return ast.children[0].value;
-        }
-    };
-};
-
-// static check
-let checkASTWithContext = (mid, variableMap = {}) => {
-    let stack = [mid];
-
-    while (stack.length) {
-        let top = stack.pop();
-        let midType = top.type;
-
-        if (midType === 'variable') {
-            let varName = top.name;
-            if (!variableMap.hasOwnProperty(varName)) {
-                throw new Error(`missing variable ${varName}`);
-            }
-        } else if (midType === 'function') { // function
-            let name = top.name;
-            let fun = variableMap[name];
-            if (!fun || typeof fun !== 'function') {
-                throw new Error(`missing function ${name}, please check your variable map. Current variable map has keys [${Object.keys(variableMap).join(', ')}].`);
-            }
-            // push params
-            let params = top.params;
-            let paramLen = params.length;
-            for (let i = 0; i < paramLen; i++) {
-                stack.push(params[i]);
-            }
-        }
-    }
-
-    return variableMap;
-};
-
-let executeAST = (mid, variableMap = {}) => {
     let root = {
         mid
     };
@@ -168,13 +32,11 @@ let executeAST = (mid, variableMap = {}) => {
         let topMid = top.mid;
         let midType = topMid.type;
 
-        if (midType === 'atom') {
+        if (midType === T_ATOM) {
             top.value = topMid.value;
             traceTable.push(stack.pop());
-        } else if (midType === 'variable') {
-            let varName = topMid.name;
-
-            top.value = variableMap[varName];
+        } else if (midType === T_VARIABLE) {
+            top.value = getVariable(topMid.name, variableMap, variableStub);
             traceTable.push(stack.pop());
         } else { // function
             if (!top.visited) {
@@ -189,8 +51,9 @@ let executeAST = (mid, variableMap = {}) => {
                 }
             } else {
                 let name = topMid.name;
-                let fun = variableMap[name];
+                let fun = getVariable(name, variableMap, variableStub);
 
+                // fetch params
                 let paramValues = [];
                 let paramLen = topMid.params.length;
                 let traceTableLen = traceTable.length;
@@ -198,6 +61,11 @@ let executeAST = (mid, variableMap = {}) => {
                 for (let i = traceTableLen - 1; i >= stopPos; i--) {
                     paramValues.push(traceTable.pop().value);
                 }
+
+                // validate params before run function
+                validateParamsInRunTime(name, paramValues, variableStub);
+
+                // run function
                 top.value = fun(...paramValues);
 
                 traceTable.push(stack.pop());
@@ -216,13 +84,9 @@ let parseStrToAst = (str) => {
     return handleChunk(null);
 };
 
-let getProductionId = (production) => {
-    return `${production[0]} := ${production[1].join(' ')}`;
-};
-
 module.exports = {
     parser,
     parseStrToAst,
     executeAST,
-    checkASTWithContext
+    checkAST
 };
