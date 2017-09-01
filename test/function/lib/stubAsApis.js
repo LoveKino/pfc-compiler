@@ -35,13 +35,15 @@ describe('stubAsApis', () => {
             }
         });
 
-        let pfcCode = add('1', '2');
+        let pfcCode = add('1"inner"', '2').code;
 
-        let ret = executeAST(parseStrToAst(pfcCode.code), {
-            add: (v1, v2) => v1 + v2
+        let ret = executeAST(parseStrToAst(pfcCode), {
+            add: (v1, v2) => {
+                return v1 + v2;
+            }
         });
 
-        assert.equal(ret, '12');
+        assert.equal(ret, '1"inner"2');
     });
 
     it('atom:null', () => {
