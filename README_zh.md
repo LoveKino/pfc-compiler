@@ -34,7 +34,7 @@ A compiler for PFC grammer
 
 ```js
 let pfcCompiler = require('pfc-compiler')
-let {parseStrToAst, checkASTWithContext, executeAST} = pfcCompiler;
+let {parseStrToAst, executeAST} = pfcCompiler;
 
 let ast = parseStrToAst('f1(1, 2, g("234", v2))');
 
@@ -43,8 +43,6 @@ let context = {
   g: (str1, str2) => Number(str1 + str2),
   v2: "5"
 };
-
-checkASTWithContext(ast, context); // you can check pfc code at development duration.
 
 let ret = executeAST(ast, context);
 
@@ -91,11 +89,11 @@ console.log(ret);
 │   │──grammer.txt    
 │   └──tokenTypes.js    
 │──index.js    
+│──lib    
+│   └──stubAsApis.js    
 │──package.json    
-│──res    
-│   └──lr1Table.js    
-└──src    
-    └──index.js     
+└──res    
+    └──lr1Table.js     
 ```
 
 
