@@ -94,13 +94,83 @@ describe('exception', () => {
         }
     });
 
-    it('validate', (done) => {
+    it('validate item', (done) => {
         try {
             executeAST(parseStrToAst('add(v1, v2)'), {
                 add: (v1, v2) => v1 + v2,
                 v1: '1',
                 v2: '2'
             }, {
+                variableStub: {
+                    add: {
+                        type: 'function',
+                        validateParamItem: (param, index) => {
+                            if (index === 0) {
+                                if (typeof params !== 'number') {
+                                    throw new Error('first param of add must be number');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        } catch (err) {
+            assert(err.toString().indexOf('first param of add must be number') !== -1);
+            done();
+        }
+    });
+
+
+    it('validate params', (done) => {
+        try {
+            executeAST(parseStrToAst('add(v1, v2)'), {
+                add: (v1, v2) => v1 + v2,
+                v1: '1',
+                v2: '2'
+            }, {
+                variableStub: {
+                    add: {
+                        type: 'function',
+                        validateParams: (params) => {
+                            if (typeof params[0] !== 'number') {
+                                throw new Error('first param of add must be number');
+                            }
+                        }
+                    }
+                }
+            });
+        } catch (err) {
+            assert(err.toString().indexOf('first param of add must be number') !== -1);
+            done();
+        }
+    });
+
+    it('static validate item', (done) => {
+        try {
+            checkAST(parseStrToAst('add(v1, "123")'), {
+                variableStub: {
+                    add: {
+                        type: 'function',
+                        validateParamItem: (param, index) => {
+                            if (index === 1) {
+                                if (typeof params !== 'number') {
+                                    throw new Error('first param of add must be number');
+                                }
+                            }
+                        }
+                    },
+                    v1: {}
+                }
+            });
+        } catch (err) {
+            assert(err.toString().indexOf('first param of add must be number') !== -1);
+            done();
+        }
+    });
+
+    it('static validate full item', (done) => {
+        try {
+            checkAST(parseStrToAst('add("123", "456")'), {
                 variableStub: {
                     add: {
                         type: 'function',

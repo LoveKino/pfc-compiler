@@ -1,6 +1,7 @@
 let {
     T_VARIABLE,
     T_FUNCTION,
+    T_ATOM,
 
     A_DEFAULT
 } = require('./const');
@@ -43,8 +44,8 @@ let checkAST = (mid, {
             }
         } else if (midType === T_FUNCTION) { // function
             let name = top.name;
-            let stub = variableStub[name];
-            if (!isObject(stub) || stub.type !== T_FUNCTION) {
+            let stub = variableStub[name] || {};
+            if (stub.type !== T_FUNCTION) {
                 throw new Error(`missing function ${name}.`);
             }
             // push params
@@ -52,6 +53,28 @@ let checkAST = (mid, {
             let paramLen = params.length;
             for (let i = 0; i < paramLen; i++) {
                 stack.push(params[i]);
+            }
+
+            if (isFunction(stub.validateParamItem) ||
+                isFunction(stub.validateParams)) {
+                let fullAtoms = true,
+                    paramValues = [];
+                // check params
+                for (let i = 0; i < paramLen; i++) {
+                    let param = params[i];
+                    if (param.type === T_ATOM) {
+                        if (isFunction(stub.validateParamItem)) {
+                            stub.validateParamItem(param.value, i);
+                        }
+                        paramValues.push(param.value);
+                    } else {
+                        fullAtoms = false;
+                    }
+                }
+
+                if (fullAtoms && isFunction(stub.validateParams)) {
+                    stub.validateParams(paramValues);
+                }
             }
         }
     }
@@ -95,7 +118,18 @@ let getVariable = (name, variableMap, variableStub) => {
 
 let validateParamsInRunTime = (funName, paramValues, variableStub) => {
     let stub = variableStub[funName] || {};
+    let validateParamItem = stub.validateParamItem;
     let validateParams = stub.validateParams;
+
+    // validate each item
+    if (isFunction(validateParamItem)) {
+        for (let i = 0; i < paramValues.length; i++) {
+            let paramValue = paramValues[i];
+            validateParamItem(paramValue, i);
+        }
+    }
+
+    // validate params as whole
     if (isFunction(validateParams)) {
         validateParams(paramValues);
     }
